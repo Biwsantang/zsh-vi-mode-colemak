@@ -211,7 +211,7 @@ ZVM_OPPEND_MODE=false
 # `a` (append)
 # `I` (insert at the non-blank beginning of current line)
 # `A` (append at the end of current line)
-ZVM_INSERT_MODE='i'
+ZVM_INSERT_MODE='l'
 
 # The mode could be the below value:
 # `n` (normal)
@@ -237,8 +237,8 @@ ZVM_ESCAPE_NEWLINE='^J'
 
 # Default vi modes
 ZVM_MODE_LAST=''
-ZVM_MODE_NORMAL='n'
-ZVM_MODE_INSERT='i'
+ZVM_MODE_NORMAL='j'
+ZVM_MODE_INSERT='l'
 ZVM_MODE_VISUAL='v'
 ZVM_MODE_VISUAL_LINE='vl'
 ZVM_MODE_REPLACE='r'
@@ -1501,13 +1501,13 @@ function zvm_navigation_handler() {
       ' ') cmd=(zle vi-forward-char);;
       '0') cmd=(zle vi-digit-or-beginning-of-line);;
       'h') cmd=(zle vi-backward-char);;
-      'j') cmd=(zle down-line-or-history);;
-      'k') cmd=(zle up-line-or-history);;
-      'l') cmd=(zle vi-forward-char);;
+      'e') cmd=(zle down-line-or-history);;
+      'n') cmd=(zle up-line-or-history);;
+      'i') cmd=(zle vi-forward-char);;
       'w') cmd=(zle vi-forward-word);;
       'W') cmd=(zle vi-forward-blank-word);;
-      'e') cmd=(zle vi-forward-word-end);;
-      'E') cmd=(zle vi-forward-blank-word-end);;
+      'k') cmd=(zle vi-forward-word-end);;
+      'K') cmd=(zle vi-forward-blank-word-end);;
       'b') cmd=(zle vi-backward-word);;
       'B') cmd=(zle vi-backward-blank-word);;
     esac
@@ -1676,13 +1676,13 @@ function zvm_range_handler() {
     # Exit if there is no line below
     count=${match[1]:-1}
     for ((i=$((CURSOR+1)); i<=$#BUFFER; i++)); do
-      [[ ${BUFFER[$i]} == $'\n' ]] && navkey='j'
+      [[ ${BUFFER[$i]} == $'\n' ]] && navkey='e'
     done
   elif [[ $keys =~ '^[cdy]([1-9][0-9]*)?k$' ]]; then
     # Exit if there is no line above
     count=${match[1]:-1}
     for ((i=$((CURSOR+1)); i>0; i--)); do
-      [[ ${BUFFER[$i]} == $'\n' ]] && navkey='k'
+      [[ ${BUFFER[$i]} == $'\n' ]] && navkey='n'
     done
   elif [[ $keys =~ '^[cdy]([1-9][0-9]*)?[\^h0]$' ]]; then
     MARK=$((MARK-1))
@@ -2032,7 +2032,7 @@ function zvm_select_surround() {
   fi
   local bpos=${ret[1]}
   local epos=${ret[2]}
-  if [[ ${action:1:1} == 'i' ]]; then
+  if [[ ${action:1:1} == 'l' ]]; then
     ((bpos++))
   else
     ((epos++))
@@ -2123,7 +2123,7 @@ function zvm_change_surround_text_object() {
   fi
   local bpos=${ret[1]}
   local epos=${ret[2]}
-  if [[ ${action:1:1} == 'i' ]]; then
+  if [[ ${action:1:1} == 'l' ]]; then
     ((bpos++))
   else
     ((epos++))
@@ -2971,8 +2971,8 @@ function zvm_exit_visual_mode() {
 function zvm_enter_insert_mode() {
   local keys=${1:-$(zvm_keys)}
 
-  if [[ $keys == 'i' ]]; then
-    ZVM_INSERT_MODE='i'
+  if [[ $keys == 'l' ]]; then
+    ZVM_INSERT_MODE='l'
   elif [[ $keys == 'a' ]]; then
     ZVM_INSERT_MODE='a'
     if ! zvm_is_empty_line; then
@@ -3004,7 +3004,7 @@ function zvm_exit_oppend_mode() {
 
 # Insert at the beginning of the line
 function zvm_insert_bol() {
-  ZVM_INSERT_MODE='I'
+  ZVM_INSERT_MODE='L'
   zle vi-first-non-blank
   zvm_select_vi_mode $ZVM_MODE_INSERT
   zvm_reset_repeat_commands $ZVM_MODE_NORMAL $ZVM_INSERT_MODE
@@ -3470,9 +3470,9 @@ function zvm_init() {
   zvm_bindkey viins '^N' down-line-or-history
 
   # Insert mode
-  zvm_bindkey vicmd 'i'  zvm_enter_insert_mode
+  zvm_bindkey vicmd 'l'  zvm_enter_insert_mode
   zvm_bindkey vicmd 'a'  zvm_enter_insert_mode
-  zvm_bindkey vicmd 'I'  zvm_insert_bol
+  zvm_bindkey vicmd 'L'  zvm_insert_bol
   zvm_bindkey vicmd 'A'  zvm_append_eol
 
   # Other key bindings
